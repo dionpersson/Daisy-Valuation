@@ -39,7 +39,6 @@ st.markdown("""
 .main {
     background: linear-gradient(135deg, var(--primary), #001a33, #002244);
     color: var(--primary-foreground);
-    font-family: 'Poppins', sans-serif;
     min-height: 100vh;
 }
 
@@ -56,26 +55,46 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
     background: linear-gradient(135deg, var(--primary), #001a33, #002244);
 }
 
+/* Enhanced text contrast for better readability */
+.stMarkdown p, .stMarkdown div, .stMarkdown span {
+    color: #ffffff ;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) ;
+}
+
+.stMarkdown strong {
+    color: var(--primary-orange) ;
+    font-weight: 600 ;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) ;
+}
+
+/* Input labels with better contrast */
+.stTextInput label, .stNumberInput label, .stSlider label {
+    color: #ffffff ;
+    font-weight: 500 ;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) ;
+}
+
 .stTitle {
-    color: var(--primary-orange) !important;
+    color: var(--primary-orange) ;
     font-family: 'Poppins', sans-serif !important;
-    font-weight: 700 !important;
-    font-size: clamp(1.8rem, 4vw, 2.5rem) !important;
-    text-align: center !important;
+    font-weight: 700 ;
+    font-size: clamp(1.8rem, 4vw, 2.5rem) ;
+    text-align: center ;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) ;
 }
 
 .stHeader {
-    color: var(--primary-orange) !important;
+    color: var(--primary-orange) ;
     font-family: 'Poppins', sans-serif !important;
-    font-weight: 600 !important;
+    font-weight: 600 ;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) ;
 }
-
-
 
 .premium-text {
     color: var(--primary-orange);
     font-weight: 600;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', sans-serif !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .elegant-neon {
@@ -95,6 +114,90 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
     box-shadow: 0 4px 16px rgba(255, 200, 157, 0.15);
 }
 
+/* Slot Machine Animation Styles */
+.slot-machine-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.slot-reel {
+    background: linear-gradient(135deg, #001a33, #002244);
+    border: 2px solid var(--primary-orange);
+    border-radius: 8px;
+    padding: 15px;
+    min-width: 200px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.slot-reel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 20%, rgba(255, 200, 157, 0.05) 50%, transparent 80%);
+    pointer-events: none;
+}
+
+.daisy-slot-reel {
+    color: var(--primary-orange);
+}
+
+.slot-title {
+    color: var(--primary-orange);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.slot-value {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px rgba(255, 200, 157, 0.4);
+    transition: all 0.1s ease;
+}
+
+.slot-value.spinning {
+    animation: slotSpin 0.1s infinite;
+    color: var(--primary-orange);
+    text-shadow: 0 0 15px rgba(255, 200, 157, 0.6);
+}
+
+@keyframes slotSpin {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-2px); }
+    100% { transform: translateY(0px); }
+}
+
+.slot-value.final {
+    animation: slotLand 0.5s ease-out;
+    color: var(--primary-orange);
+    text-shadow: 0 0 20px rgba(255, 200, 157, 0.5);
+    font-size: 28px;
+}
+
+@keyframes slotLand {
+    0% { transform: scale(1.2); }
+    50% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .elegant-neon {
@@ -103,6 +206,24 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
     
     .value-display {
         padding: 12px;
+    }
+    
+    .slot-machine-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .slot-reel {
+        min-width: 150px;
+        height: 100px;
+    }
+    
+    .slot-value {
+        font-size: 20px;
+    }
+    
+    .slot-value.final {
+        font-size: 24px;
     }
 }
 
@@ -113,14 +234,13 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
 }
 .stButton > button, .stDownloadButton > button {
     background: linear-gradient(135deg, var(--primary-orange), #ffb366);
-    color: var(--primary) !important;
+    color: var(--primary) ;
     border: none;
     border-radius: 8px;
     font-weight: 600;
-    font-family: 'Poppins', sans-serif;
     transition: all 0.3s ease;
     box-shadow: 0 4px 16px rgba(255, 200, 157, 0.3);
-    width: fit-content !important;
+    width: fit-content ;
 }
 
 .stButton > button:hover, .stDownloadButton > button:hover {
@@ -212,16 +332,83 @@ if "calc_done" not in st.session_state:
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if st.button("🎯 Calculate Business Valuation", type="primary", use_container_width=True):
-        with st.spinner("✨ Analyzing your business metrics..."):
-            # Elegant progress animation
-            progress_bar = st.progress(0)
-            for i in range(100):
-                time.sleep(0.015)
-                progress_bar.progress(i + 1)
-            progress_bar.empty()
+        # Calculate values first
+        base_val = base_valuation(revenue, profit_margin, recurring_pct, growth_pct)
+        daisy_val = daisy_valuation(revenue)
 
-        st.session_state.base_val = base_valuation(revenue, profit_margin, recurring_pct, growth_pct)
-        st.session_state.daisy_val = daisy_valuation(revenue)
+        # Slot machine animation
+        slot_title = st.empty()
+        slot_title.markdown(
+            "<div style='text-align: center; font-size: 24px; font-weight: 600; margin-top: 20px;'>🎰 Calculating Your Business Value...</div>", unsafe_allow_html=True)
+
+        # Create slot machine container
+        slot_container = st.empty()
+
+        # Animation parameters
+        animation_duration = 5  # 10 seconds
+        update_interval = 0.1  # Update every 100ms
+        total_updates = int(animation_duration / update_interval)
+
+        import random
+
+        # Animate the slot machine
+        for i in range(total_updates):
+            # Generate random values during spinning
+            if i < total_updates - 10:  # Keep spinning until near the end
+                random_base = random.randint(int(base_val * 0.5), int(base_val * 1.5))
+                random_daisy = random.randint(int(daisy_val * 0.5), int(daisy_val * 1.5))
+                spinning_class = "spinning"
+            else:
+                # Gradually approach final values in last 10 updates
+                progress = (i - (total_updates - 10)) / 10
+                random_base = int(base_val * (0.8 + 0.2 * progress))
+                random_daisy = int(daisy_val * (0.8 + 0.2 * progress))
+                spinning_class = "spinning"
+
+            # Display slot machine reels
+            slot_container.markdown(f"""
+            <div class="slot-machine-container">
+                <div class="slot-reel">
+                    <div class="slot-title">Current Valuation</div>
+                    <div class="slot-value {spinning_class}">${random_base:,.0f}</div>
+                </div>
+                <div style="font-size: 48px; color: var(--primary-orange); align-self: center;">VS</div>
+                <div class="slot-reel">
+                    <div class="slot-title">With Daisy's Help</div>
+                    <div class="slot-value {spinning_class}">${random_daisy:,.0f}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            time.sleep(update_interval)
+
+        # Final dramatic reveal
+        slot_title.markdown(
+            "<div style='text-align: center; font-size: 24px; font-weight: 600; margin-top: 20px;'>🎉 Calculation Complete!</div>", unsafe_allow_html=True)
+        slot_container.markdown(f"""
+        <div class="slot-machine-container">
+            <div class="slot-reel">
+                <div class="slot-title">Current Valuation</div>
+                <div class="slot-value final">${base_val:,.0f}</div>
+            </div>
+            <div style="font-size: 48px; color: var(--primary-orange); align-self: center;">VS</div>
+            <div class="slot-reel daisy-slot-reel">
+                <div class="slot-title">With Daisy's Help</div>
+                <div class="slot-value final">${daisy_val:,.0f}</div>
+            </div>
+        </div>
+        <style>
+        @keyframes pulse {{
+            0% {{ transform: scale(1); }}
+            50% {{ transform: scale(1.1); }}
+            100% {{ transform: scale(1); }}
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+
+        # Store values in session state
+        st.session_state.base_val = base_val
+        st.session_state.daisy_val = daisy_val
         st.session_state.pm = profit_margin
         st.session_state.gr = growth_pct
         st.session_state.rr = recurring_pct
@@ -430,7 +617,7 @@ if st.session_state.calc_done:
         st.markdown(f'''
         <div class="value-display" style="min-height: 140px; display: flex; flex-direction: column; justify-content: center;">
             <h4 style="color: #ffffff; margin: 0; font-weight: 400;">Current Valuation</h4>
-            <h2 style="color: #ffffff; margin: 10px 0; font-family: Poppins; font-weight: 400;">${val_base:,.0f}</h2>
+            <h2 style="color: #ffffff; margin: 10px 0; font-weight: 400;">${val_base:,.0f}</h2>
         </div>
         ''', unsafe_allow_html=True)
     with col2:
@@ -438,7 +625,7 @@ if st.session_state.calc_done:
         <div class="value-display" style="background: linear-gradient(135deg, rgba(255, 200, 157, 0.2), rgba(255, 252, 242, 0.1)); border: 3px solid #ffc89d; box-shadow: 0 8px 32px rgba(255, 200, 157, 0.3); min-height: 140px; display: flex; flex-direction: column; justify-content: center;">
             <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">Projected Valuation</h4>
             <p style="color: #ffc89d; margin: 0; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">In three years, based on Daisy's expectations</p>
-            <h2 style="color: #ffc89d; margin: 10px 0; font-family: Poppins; font-weight: 700; font-size: 2.2rem; text-shadow: 0 0 20px rgba(255, 200, 157, 0.4);">${val_daisy:,.0f}</h2>
+            <h2 style="color: #ffc89d; margin: 0; font-weight: 700; font-size: 2.2rem; text-shadow: 0 0 20px rgba(255, 200, 157, 0.4);">${val_daisy:,.0f}</h2>
         </div>
         ''', unsafe_allow_html=True)
 
@@ -446,7 +633,7 @@ if st.session_state.calc_done:
     if increase > 0:
         st.markdown(f'''
         <div style="text-align: center; margin: 20px 0;">
-            <h3 class="premium-text">✨ Potential Value Increase: ${increase:,.0f}</h3>
+            <h3 style="color: #ffc89d; margin: 0; font-weight: 600;">✨ Potential Value Increase: ${increase:,.0f}</h3>
         </div>
         ''', unsafe_allow_html=True)
 
