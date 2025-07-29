@@ -1,10 +1,8 @@
 import streamlit as st
-import numpy as np
 import time
 import pandas as pd
 import matplotlib.pyplot as plt
 from fpdf import FPDF
-import base64
 from io import BytesIO
 
 # Vegas-themed styling
@@ -156,7 +154,7 @@ with col2:
     st.image("images/daisy_full_sunrise + warm connection.png", use_container_width=False)
 
 st.markdown('<h1 class="elegant-neon" style="text-align: center;">Business Valuation Calculator</h1>', unsafe_allow_html=True)
-st.markdown('<h3 class="premium-text" style="text-align: center; font-weight: 400; margin-bottom: 30px;">🎰 Discover Your Company\'s True Potential 🎰</h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="premium-text" style="text-align: center; font-weight: 400; margin-bottom: 30px;">Discover Your Company\'s True Potential</h3>', unsafe_allow_html=True)
 
 # Contact Information Section
 st.header("👤 Contact Information")
@@ -170,6 +168,7 @@ with col2:
     location = st.text_input("Location", placeholder="City, State")
     email = st.text_input("Email Address", placeholder="your.email@company.com")
 
+st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Business Information Section
@@ -454,7 +453,7 @@ if st.session_state.calc_done:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # PDF and Meeting Section
-    st.markdown('<h2 class="premium-text" style="text-align: center;">📋 Next Steps</h2>', unsafe_allow_html=True)
+    st.markdown('<h3 class="premium-text" style="text-align: center;">📋 Next Steps</h3>', unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
 
