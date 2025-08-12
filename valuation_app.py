@@ -321,10 +321,6 @@ def base_valuation(revenue, margin, recurring, growth):
     return revenue * m * X
 
 
-def daisy_valuation(revenue):
-    return revenue * 1.45 * 0.2 * 12.5  # Daisy = revenue × 3.625
-
-
 # Handle Calculate button with elegant animation
 if "calc_done" not in st.session_state:
     st.session_state.calc_done = False
@@ -334,7 +330,6 @@ with col2:
     if st.button("🎯 Calculate Business Valuation", type="primary", use_container_width=True):
         # Calculate values first
         base_val = base_valuation(revenue, profit_margin, recurring_pct, growth_pct)
-        daisy_val = daisy_valuation(revenue)
 
         # Slot machine animation
         slot_title = st.empty()
@@ -345,7 +340,7 @@ with col2:
         slot_container = st.empty()
 
         # Animation parameters
-        animation_duration = 5  # 10 seconds
+        animation_duration = 3  # 3 seconds
         update_interval = 0.1  # Update every 100ms
         total_updates = int(animation_duration / update_interval)
 
@@ -356,26 +351,19 @@ with col2:
             # Generate random values during spinning
             if i < total_updates - 10:  # Keep spinning until near the end
                 random_base = random.randint(int(base_val * 0.5), int(base_val * 1.5))
-                random_daisy = random.randint(int(daisy_val * 0.5), int(daisy_val * 1.5))
                 spinning_class = "spinning"
             else:
                 # Gradually approach final values in last 10 updates
                 progress = (i - (total_updates - 10)) / 10
                 random_base = int(base_val * (0.8 + 0.2 * progress))
-                random_daisy = int(daisy_val * (0.8 + 0.2 * progress))
                 spinning_class = "spinning"
 
-            # Display slot machine reels
+            # Display single slot machine reel
             slot_container.markdown(f"""
-            <div class="slot-machine-container">
-                <div class="slot-reel">
-                    <div class="slot-title">Current Valuation</div>
-                    <div class="slot-value {spinning_class}">${random_base:,.0f}</div>
-                </div>
-                <div style="font-size: 48px; color: var(--primary-orange); align-self: center;">VS</div>
-                <div class="slot-reel">
-                    <div class="slot-title">With Daisy's Help</div>
-                    <div class="slot-value {spinning_class}">${random_daisy:,.0f}</div>
+            <div class="slot-machine-container" style="justify-content: center; margin: 30px 0;">
+                <div class="slot-reel" style="min-width: 400px; min-height: 150px;">
+                    <div class="slot-title" style="font-size: 18px;">Your Business Valuation</div>
+                    <div class="slot-value {spinning_class}" style="font-size: 32px;">${random_base:,.0f}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -386,15 +374,10 @@ with col2:
         slot_title.markdown(
             "<div style='text-align: center; font-size: 24px; font-weight: 600; margin-top: 20px;'>🎉 Calculation Complete!</div>", unsafe_allow_html=True)
         slot_container.markdown(f"""
-        <div class="slot-machine-container">
-            <div class="slot-reel">
-                <div class="slot-title">Current Valuation</div>
-                <div class="slot-value final">${base_val:,.0f}</div>
-            </div>
-            <div style="font-size: 48px; color: var(--primary-orange); align-self: center;">VS</div>
-            <div class="slot-reel daisy-slot-reel">
-                <div class="slot-title">With Daisy's Help</div>
-                <div class="slot-value final">${daisy_val:,.0f}</div>
+        <div class="slot-machine-container" style="justify-content: center; margin: 30px 0;">
+            <div class="slot-reel" style="min-width: 400px; min-height: 150px;">
+                <div class="slot-title" style="font-size: 18px;">Your Business Valuation</div>
+                <div class="slot-value final" style="font-size: 36px;">${base_val:,.0f}</div>
             </div>
         </div>
         <style>
@@ -408,7 +391,6 @@ with col2:
 
         # Store values in session state
         st.session_state.base_val = base_val
-        st.session_state.daisy_val = daisy_val
         st.session_state.pm = profit_margin
         st.session_state.gr = growth_pct
         st.session_state.rr = recurring_pct
@@ -427,7 +409,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 
 # PDF Generation Function
-def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, val_daisy, pm, rr, rmr, gr):
+def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, pm, rr, rmr, gr, recommendations):
     try:
         pdf = FPDF()
         pdf.add_page()
@@ -479,79 +461,46 @@ def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, 
         pdf.cell(0, 6, f"RMR (Recurring Monthly Revenue): {rmr}%", ln=True)
         pdf.cell(0, 6, f"Growth Rate: {gr}%", ln=True)
 
-        # Valuation Results Section - Table Style
+        # Valuation Results Section
         pdf.ln(8)
         pdf.set_fill_color(*primary_orange)
         pdf.set_text_color(*primary_blue)
         pdf.set_font("Arial", size=14, style='B')
-        pdf.cell(0, 10, "VALUATION RESULTS", ln=True, fill=True, align='C')
+        pdf.cell(0, 10, "BUSINESS VALUATION", ln=True, fill=True, align='C')
 
-        pdf.ln(3)
-
-        # Table headers
-        pdf.set_fill_color(245, 245, 245)
         pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", size=11, style='B')
-        pdf.cell(63, 8, "Current Valuation", border=1, fill=True, align='C')
-
-        pdf.set_fill_color(*primary_orange)
-        pdf.set_text_color(*primary_blue)
-        pdf.cell(64, 8, "With Daisy Partnership", border=1, fill=True, align='C')
-
-        pdf.set_fill_color(200, 255, 200)
-        pdf.set_text_color(0, 100, 0)
-        pdf.cell(63, 8, "Potential Increase", ln=True, border=1, fill=True, align='C')
-
-        # Table values
-        pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", size=12, style='B')
+        pdf.set_font("Arial", size=16, style='B')
         pdf.set_fill_color(255, 255, 255)
-        pdf.cell(63, 10, f"${val_base:,.0f}", border=1, fill=True, align='C')
+        pdf.cell(0, 12, f"${val_base:,.0f}", ln=True, fill=True, align='C', border=1)
 
-        pdf.set_fill_color(255, 245, 230)
-        pdf.set_text_color(*primary_blue)
-        pdf.cell(64, 10, f"${val_daisy:,.0f}", border=1, fill=True, align='C')
-
-        pdf.set_fill_color(240, 255, 240)
-        pdf.set_text_color(0, 120, 0)
-        pdf.cell(63, 10, f"${val_daisy - val_base:,.0f}", ln=True, border=1, fill=True, align='C')
-
-        # Key Value Enhancement Opportunities
+        # Personalized Recommendations
         pdf.ln(8)
         pdf.set_fill_color(*primary_blue)
         pdf.set_text_color(*primary_orange)
         pdf.set_font("Arial", size=12, style='B')
-        pdf.cell(0, 8, "KEY VALUE ENHANCEMENT OPPORTUNITIES", ln=True, fill=True, align='C')
-
-        # Generate tips
-        if pm < 10 and gr < 10 and rr < 30:
-            tips = [
-                "Improve net margin (after addbacks) to 20%",
-                "Increase recurring revenue to 30%",
-                "Target growth rate above 10%",
-                "Implement comprehensive tech stack"
-            ]
-        elif pm < 10 and gr >= 10 and rr < 30:
-            tips = [
-                "Improve net margin (after addbacks) to 20%",
-                "Increase recurring revenue to 30%",
-                "Implement comprehensive tech stack",
-                f"Accelerate growth rate to {gr + 5:.0f}%"
-            ]
-        else:
-            tips = [
-                "Increase recurring revenue to 30%",
-                "Implement comprehensive tech stack",
-                "Maintain net margins at 20% or higher",
-                "Target growth rate of 15% or higher"
-            ]
+        pdf.cell(0, 8, "PERSONALIZED RECOMMENDATIONS", ln=True, fill=True, align='C')
 
         pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", size=11)
+        pdf.set_font("Arial", size=10)
         pdf.ln(3)
 
-        for i, tip in enumerate(tips, 1):
-            pdf.cell(0, 6, f"{i}. {tip}", ln=True)
+        for i, rec in enumerate(recommendations, 1):
+            pdf.set_font("Arial", size=10, style='B')
+            pdf.cell(0, 6, f"Recommendation #{i}:", ln=True)
+            pdf.set_font("Arial", size=9)
+
+            # Word wrap for long recommendations
+            words = rec.split(' ')
+            line = ''
+            for word in words:
+                if pdf.get_string_width(line + word + ' ') < 180:
+                    line += word + ' '
+                else:
+                    pdf.cell(0, 5, line.strip(), ln=True)
+                    line = word + ' '
+            if line:
+                pdf.cell(0, 5, line.strip(), ln=True)
+            pdf.ln(2)
 
         # Footer with disclaimer
         pdf.ln(8)
@@ -563,10 +512,9 @@ def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, 
         pdf.set_text_color(0, 0, 0)
         pdf.set_font("Arial", size=9, style='I')
         pdf.ln(2)
-        pdf.cell(0, 5, "This calculator is for entertainment purposes only and just like the slots, results may vary!", ln=True, align='C')
-        pdf.cell(0, 5, "Actual company valuations depend on many factors and cannot be guaranteed.", ln=True, align='C')
-        pdf.cell(0, 5, "What happens in Daisy's Vegas booth... stays in Daisy's Vegas booth,", ln=True, align='C')
-        pdf.cell(0, 5, "unless it's your valuation which we hope shoots to the moon!", ln=True, align='C')
+        pdf.cell(0, 5, "This calculator provides estimates based on the information provided.", ln=True, align='C')
+        pdf.cell(0, 5, "Actual company valuations depend on many factors and should be verified by professionals.", ln=True, align='C')
+        pdf.cell(0, 5, "Results are for informational purposes and cannot be guaranteed.", ln=True, align='C')
 
         # Create an in-memory binary stream and save PDF to it
         output_buffer = BytesIO()
@@ -579,61 +527,72 @@ def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, 
         raise Exception(f"PDF generation failed: {str(inner_e)}")
 
 
+# Function to generate personalized recommendations
+def get_recommendations(margin, growth, recurring):
+    x = margin  # margin rate
+    y = growth  # growth rate
+    z = recurring  # recurring revenue rate
+
+    recommendations = []
+
+    # First recommendation based on margin and growth
+    if x < 10:
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on driving margins more than growth. A 15% or higher margin will do more for building value for your business than increasing your growth rate."
+    elif x >= 10 and y < 15:
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on improving your growth rate to 15% or above as long as you can continue to keep your margins above 10%."
+    elif x >= 10 and x <= 20 and y >= 15:
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on improving your margin above 20%."
+    elif x > 20:
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on increasing your growth rate while keeping your margins steady."
+    else:
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on improving your margin above 20%."
+
+    recommendations.append(rec1)
+
+    # Second recommendation based on recurring revenue
+    if z < 40:
+        rec2 = f"We recommend that you increase your recurring revenue from {z}% to 40% of your revenue to obtain the type of valuations in security and pest businesses (up to 4x revenue). Daisy has a proven system for increasing your recurring revenue in a dramatic way through DaisyCare."
+    elif z >= 40 and z < 100:
+        target = min(z + 20, 100)
+        rec2 = f"We recommend that you increase your recurring revenue from {z}% to {target}% to obtain the type of valuations in security and pest businesses (up to 4x revenue). Daisy has a proven system for increasing your recurring revenue in a dramatic way through DaisyCare."
+    else:  # z == 100
+        rec2 = "You are doing great on recurring revenue!! Keep it up!"
+
+    recommendations.append(rec2)
+
+    # Third recommendation - tech stack
+    rec3 = "We recommend building out or obtaining a comprehensive tech stack for your business that contains detailed records of all of your customer interactions (a customer relationship management tool), a financial system with business intelligence that really lets you understand your business performance in real time, and act on it, and an always-updated quoting tool that helps you expedite quotes based on current product and pricing information. Daisy has built out these tools and can help you apply them to your business."
+    recommendations.append(rec3)
+
+    return recommendations
+
+
 # If calculation has been run, show results
 if st.session_state.calc_done:
     val_base = st.session_state.base_val
-    val_daisy = st.session_state.daisy_val
+    pm = st.session_state.pm
+    gr = st.session_state.gr
+    rr = st.session_state.rr
 
-    df = pd.DataFrame({
-        "Scenario": ["Without Daisy", "With Daisy's Help"],
-        "Valuation": [val_base, val_daisy]
-    })
+    # Get personalized recommendations
+    recommendations = get_recommendations(pm, gr, rr)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    fig.patch.set_facecolor('#00172b')
-    ax.set_facecolor('#001a33')
-    bars = ax.bar(df["Scenario"], df["Valuation"], color=["#e3e6e8", "#ffc89d"],
-                  edgecolor='#ffc89d', linewidth=2, alpha=0.9)
-    ax.set_ylabel("Valuation ($)", color='#ffc89d', fontsize=12, fontweight='600')
-    ax.set_title("Business Valuation Comparison", color='#ffc89d', fontsize=16, fontweight='bold', pad=20)
-    ax.ticklabel_format(axis='y', style='plain')
-    ax.tick_params(colors='#ffc89d', labelsize=10)
-    ax.spines['bottom'].set_color('#ffc89d')
-    ax.spines['left'].set_color('#ffc89d')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.grid(True, alpha=0.1, color='#ffc89d')
+    # Display recommendations prominently
+    st.markdown('<h2 class="elegant-neon" style="text-align: center; margin: 40px 0 20px 0;">🌟 Your Personalized Recommendations for Creating Generational Wealth</h2>', unsafe_allow_html=True)
+    st.markdown('<h4 class="premium-text" style="text-align: center; margin-bottom: 30px;">Here are your top three recommendations based on your business metrics:</h4>', unsafe_allow_html=True)
 
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2.0, height * 1.01, f"${height:,.0f}",
-                ha='center', va='bottom', color='#ffc89d', fontweight='bold', fontsize=11)
-
-    plt.tight_layout()
-    st.pyplot(fig)
-
-    col1, col2 = st.columns(2)
-    with col1:
+    # Style for recommendation boxes
+    for i, rec in enumerate(recommendations, 1):
         st.markdown(f'''
-        <div class="value-display" style="min-height: 140px; display: flex; flex-direction: column; justify-content: center;">
-            <h4 style="color: #ffffff; margin: 0; font-weight: 400;">Current Valuation</h4>
-            <h2 style="color: #ffffff; margin: 10px 0; font-weight: 400;">${val_base:,.0f}</h2>
-        </div>
-        ''', unsafe_allow_html=True)
-    with col2:
-        st.markdown(f'''
-        <div class="value-display" style="background: linear-gradient(135deg, rgba(255, 200, 157, 0.2), rgba(255, 252, 242, 0.1)); border: 3px solid #ffc89d; box-shadow: 0 8px 32px rgba(255, 200, 157, 0.3); min-height: 140px; display: flex; flex-direction: column; justify-content: center;">
-            <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">Projected Valuation</h4>
-            <p style="color: #ffc89d; margin: 0; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">In three years, based on Daisy's expectations</p>
-            <h2 style="color: #ffc89d; margin: 0; font-weight: 700; font-size: 2.2rem; text-shadow: 0 0 20px rgba(255, 200, 157, 0.4);">${val_daisy:,.0f}</h2>
-        </div>
-        ''', unsafe_allow_html=True)
-
-    increase = val_daisy - val_base
-    if increase > 0:
-        st.markdown(f'''
-        <div style="text-align: center; margin: 20px 0;">
-            <h3 style="color: #ffc89d; margin: 0; font-weight: 600;">✨ Potential Value Increase: ${increase:,.0f}</h3>
+        <div style="background: linear-gradient(135deg, rgba(255, 200, 157, 0.15), rgba(255, 252, 242, 0.08)); 
+                    border: 2px solid #ffc89d; border-radius: 12px; padding: 20px; margin: 20px 0; 
+                    box-shadow: 0 6px 20px rgba(255, 200, 157, 0.2);">
+            <h4 style="color: #ffc89d; margin: 0 0 15px 0; font-weight: 600; font-size: 1.2rem;">
+                💡 Recommendation #{i}
+            </h4>
+            <p style="color: #ffffff; margin: 0; font-size: 16px; line-height: 1.6;">
+                {rec}
+            </p>
         </div>
         ''', unsafe_allow_html=True)
 
@@ -654,11 +613,11 @@ if st.session_state.calc_done:
                 st.session_state.email,
                 st.session_state.revenue,
                 val_base,
-                val_daisy,
                 st.session_state.pm,
                 st.session_state.rr,
                 st.session_state.rmr,
-                st.session_state.gr
+                st.session_state.gr,
+                recommendations
             )
 
             st.download_button(
@@ -686,39 +645,6 @@ if st.session_state.calc_done:
             """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
-
-    # Show tips if checkbox selected
-    pm = st.session_state.pm
-    gr = st.session_state.gr
-    rr = st.session_state.rr
-
-    if pm < 10 and gr < 10 and rr < 30:
-        tips = [
-            "📊 Improve net margin (after addbacks) to ~20%",
-            "🔄 Increase recurring revenue to 30%",
-            "📈 Target growth rate above 10%",
-            "💻 Implement comprehensive tech stack"
-        ]
-    elif pm < 10 and gr >= 10 and rr < 30:
-        tips = [
-            "📊 Improve net margin (after addbacks) to ~20%",
-            "🔄 Increase recurring revenue to 30%",
-            "💻 Implement comprehensive tech stack",
-            f"📈 Accelerate growth rate to {gr + 5:.0f}%"
-        ]
-    else:
-        tips = [
-            "🔄 Increase recurring revenue to 30%",
-            "💻 Implement comprehensive tech stack",
-            "📊 Maintain net margins at 20% or higher",
-            "📈 Target growth rate of 15% or higher"
-        ]
-
-    st.markdown('<h3 class="premium-text" style="text-align: center; margin-top: 30px;">🎯 Key Value Enhancement Opportunities</h3>',
-                unsafe_allow_html=True)
-    for tip in tips:
-        st.markdown(
-            f"<p style='color: #ffffff; font-size: 15px; margin: 8px 0; text-align: center;'>• {tip}</p>", unsafe_allow_html=True)
 
     # Disclaimer
     st.markdown('<h3 class="premium-text" style="text-align: center; margin-top: 30px;">⚖️ Important Disclaimer</h3>', unsafe_allow_html=True)
