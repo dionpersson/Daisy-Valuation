@@ -798,8 +798,10 @@ if st.session_state.calc_done:
             recommendations
         )
 
+        st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
+
         # Email button with validation
-        if st.button("📧 Email me my valuation report", type="primary", use_container_width=True):
+        if st.button("📧 Email me my valuation report", type="primary"):
             # Use current email input, not session state (in case user changed it after calculation)
             current_email = email if email else st.session_state.get('email', '')
             if not current_email or not current_email.strip():
