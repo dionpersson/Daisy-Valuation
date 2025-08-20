@@ -858,7 +858,7 @@ if st.session_state.calc_done:
             <div style="background: rgba(255, 200, 157, 0.1); padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ffc89d; box-shadow: 0 4px 16px rgba(255, 200, 157, 0.15);">
                 <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">💼 Ready to Maximize Your Value?</h4>
                 <p style="color: #ffffff; margin: 10px 0; font-size: 14px;">Schedule a consultation with our experts.</p>
-                <a href="https://outlook.office.com/book/DaisyCoCEDIABusinessValuationConsultations@daisyco.com/?ismsaljsauthenabled" target="_blank" style="color: #ffc89d; font-weight: 600; text-decoration: none; font-size: 16px;">
+                <a href="https://outlook.office.com/book/DaisyCoCEDIABusinessValuationConsultations@daisyco.com" target="_blank" style="color: #ffc89d; font-weight: 600; text-decoration: none; font-size: 16px;">
                     🗓️ Book Your Consultation
                 </a>
             </div>
