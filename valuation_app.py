@@ -784,69 +784,67 @@ if st.session_state.calc_done:
     st.markdown('<h3 class="premium-text" style="text-align: center;">📋 Next Steps</h3>', unsafe_allow_html=True)
 
     # Single button to generate and download PDF
-    try:
-        pdf_data = generate_pdf(
-            st.session_state.dealer_name,
-            st.session_state.company_name,
-            st.session_state.location,
-            st.session_state.email,
-            st.session_state.revenue,
-            val_base,
-            st.session_state.pm,
-            st.session_state.rr,
-            st.session_state.gr,
-            recommendations
-        )
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        try:
+            pdf_data = generate_pdf(
+                st.session_state.dealer_name,
+                st.session_state.company_name,
+                st.session_state.location,
+                st.session_state.email,
+                st.session_state.revenue,
+                val_base,
+                st.session_state.pm,
+                st.session_state.rr,
+                st.session_state.gr,
+                recommendations
+            )
 
-        st.markdown("<div style='display: flex; justify-content: center; width: 100%;'>", unsafe_allow_html=True)
-
-        # Email button with validation
-        if st.button("📧 Email me my valuation report", type="primary"):
-            # Use current email input, not session state (in case user changed it after calculation)
-            current_email = email if email else st.session_state.get('email', '')
-            if not current_email or not current_email.strip():
-                st.error("⚠️ Please provide an email address in the contact information section above.")
-            elif not validate_email(current_email):
-                st.error("⚠️ Please enter a valid email address.")
-            else:
-                with st.spinner("📤 Sending your valuation report..."):
-                    success, message = send_valuation_email(
-                        current_email,
-                        st.session_state.dealer_name,
-                        st.session_state.company_name,
-                        pdf_data
-                    )
-
-                if success:
-                    st.success(f"✅ {message}")
-                    st.balloons()
+            # Email button with validation
+            if st.button("📧 Email me my valuation report", type="primary", use_container_width=True):
+                # Use current email input, not session state (in case user changed it after calculation)
+                current_email = email if email else st.session_state.get('email', '')
+                if not current_email or not current_email.strip():
+                    st.error("⚠️ Please provide an email address in the contact information section above.")
+                elif not validate_email(current_email):
+                    st.error("⚠️ Please enter a valid email address.")
                 else:
-                    st.error(f"❌ {message}")
-                    # Fallback option to download if email fails
-                    st.download_button(
-                        label="📄 Download PDF instead",
-                        data=pdf_data,
-                        file_name=f"{st.session_state.company_name or 'Business'} Valuation Report.pdf",
-                        mime="application/pdf",
-                        type="secondary",
-                        use_container_width=True,
-                    )
-    except Exception as e:
-        st.error(f"⚠️ Unable to generate PDF: {str(e)}")
-        st.button("📄 PDF Unavailable", disabled=True, type="secondary", use_container_width=True)
+                    with st.spinner("📤 Sending your valuation report..."):
+                        success, message = send_valuation_email(
+                            current_email,
+                            st.session_state.dealer_name,
+                            st.session_state.company_name,
+                            pdf_data
+                        )
 
-    if st.button("📅 Contact me for my free consultation", type="primary"):
-        st.markdown("""
-        <div style="background: rgba(255, 200, 157, 0.1); padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ffc89d; box-shadow: 0 4px 16px rgba(255, 200, 157, 0.15);">
-            <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">💼 Ready to Maximize Your Value?</h4>
-            <p style="color: #ffffff; margin: 10px 0; font-size: 14px;">Schedule a consultation with our experts.</p>
-            <a href="https://calendly.com/daisy-valuation" target="_blank" style="color: #ffc89d; font-weight: 600; text-decoration: none; font-size: 16px;">
-                🗓️ Book Your Consultation
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
+                    if success:
+                        st.success(f"✅ {message}")
+                        st.balloons()
+                    else:
+                        st.error(f"❌ {message}")
+                        # Fallback option to download if email fails
+                        st.download_button(
+                            label="📄 Download PDF instead",
+                            data=pdf_data,
+                            file_name=f"{st.session_state.company_name or 'Business'} Valuation Report.pdf",
+                            mime="application/pdf",
+                            type="secondary",
+                            use_container_width=True,
+                        )
+        except Exception as e:
+            st.error(f"⚠️ Unable to generate PDF: {str(e)}")
+            st.button("📄 PDF Unavailable", disabled=True, type="secondary", use_container_width=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        if st.button("📅 Contact me for my free consultation", type="primary", use_container_width=True):
+            st.markdown("""
+            <div style="background: rgba(255, 200, 157, 0.1); padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ffc89d; box-shadow: 0 4px 16px rgba(255, 200, 157, 0.15);">
+                <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">💼 Ready to Maximize Your Value?</h4>
+                <p style="color: #ffffff; margin: 10px 0; font-size: 14px;">Schedule a consultation with our experts.</p>
+                <a href="https://calendly.com/daisy-valuation" target="_blank" style="color: #ffc89d; font-weight: 600; text-decoration: none; font-size: 16px;">
+                    🗓️ Book Your Consultation
+                </a>
+            </div>
+            """, unsafe_allow_html=True)
 
     # Disclaimer
     st.markdown('<h3 class="premium-text" style="text-align: center; margin-top: 30px;">⚖️ Important Disclaimer</h3>', unsafe_allow_html=True)
