@@ -798,7 +798,7 @@ if st.session_state.calc_done:
             recommendations
         )
 
-        st.markdown("<div style='display: flex; justify-content: center;'>", unsafe_allow_html=True)
+        st.markdown("<div style='display: flex; justify-content: center; width: 100%;'>", unsafe_allow_html=True)
 
         # Email button with validation
         if st.button("📧 Email me my valuation report", type="primary"):
