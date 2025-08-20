@@ -2,3 +2,6 @@ streamlit
 matplotlib
 pandas
 fpdf2
+msal
+requests
+python-dotenv

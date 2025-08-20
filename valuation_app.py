@@ -1,9 +1,19 @@
-import streamlit as st
-import time
-import pandas as pd
-import matplotlib.pyplot as plt
-from fpdf import FPDF
+import re
+import json
+import base64
+import requests
+import msal
 from io import BytesIO
+from fpdf import FPDF
+import matplotlib.pyplot as plt
+import pandas as pd
+import time
+import os
+from dotenv import load_dotenv
+import streamlit as st
+
+# Load environment variables from .env file if it exists
+load_dotenv()
 
 # Vegas-themed styling
 st.set_page_config(page_title="Daisy's Business Valuation Calculator", page_icon="🎰", layout="wide")
@@ -253,8 +263,21 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
 .stNumberInput > div > div > input {
     background: rgba(255, 252, 242, 0.1);
     border: 1px solid var(--accent);
-    color: var(--primary-foreground);
+    color: var(--primary-foreground) !important;
     border-radius: 6px;
+}
+
+/* Force input text to be white and visible */
+.stTextInput input,
+.stNumberInput input {
+    color: #ffffff !important;
+    background: rgba(255, 252, 242, 0.1) !important;
+}
+
+/* Placeholder text styling */
+.stTextInput input::placeholder,
+.stNumberInput input::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .stSlider > div > div > div > div {
@@ -302,9 +325,8 @@ st.markdown(
 revenue = st.number_input("1. Total Annual Revenue ($)", min_value=0, value=1000000, step=1, format="%d")
 num_employees = st.number_input("2. Number of Employees", min_value=0, step=1)
 profit_margin = st.slider("3. Net Margin (after addbacks) (%)", 0, 100, 15)
-recurring_pct = st.slider("4. Recurring Revenue (% of revenue)", 0, 100, 10)
-rmr_pct = st.slider("5. RMR - Recurring Monthly Revenue (% of revenue)", 0, 100, 5)
-growth_pct_input = st.slider("6. Average Growth Rate (%)", 0, 100, 10)
+recurring_pct = st.slider("4. RMR/Recurring Revenue (% of revenue)", 0, 100, 10)
+growth_pct_input = st.slider("5. Average Growth Rate (%)", 0, 100, 10)
 growth_pct = min(growth_pct_input, 25)  # Cap at 25%
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -394,7 +416,6 @@ with col2:
         st.session_state.pm = profit_margin
         st.session_state.gr = growth_pct
         st.session_state.rr = recurring_pct
-        st.session_state.rmr = rmr_pct
         st.session_state.dealer_name = dealer_name
         st.session_state.company_name = company_name
         st.session_state.location = location
@@ -409,7 +430,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 
 # PDF Generation Function
-def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, pm, rr, rmr, gr, recommendations):
+def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, pm, rr, gr, recommendations):
     try:
         pdf = FPDF()
         pdf.add_page()
@@ -457,8 +478,7 @@ def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, 
         pdf.ln(2)
         pdf.cell(0, 6, f"Annual Revenue: ${revenue:,.0f}", ln=True)
         pdf.cell(0, 6, f"Net Margin (after addbacks): {pm}%", ln=True)
-        pdf.cell(0, 6, f"Recurring Revenue: {rr}%", ln=True)
-        pdf.cell(0, 6, f"RMR (Recurring Monthly Revenue): {rmr}%", ln=True)
+        pdf.cell(0, 6, f"RMR/Recurring Revenue: {rr}%", ln=True)
         pdf.cell(0, 6, f"Growth Rate: {gr}%", ln=True)
 
         # Valuation Results Section
@@ -502,6 +522,19 @@ def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, 
                 pdf.cell(0, 5, line.strip(), ln=True)
             pdf.ln(2)
 
+        # Contact Information Section
+        pdf.ln(8)
+        pdf.set_fill_color(*primary_orange)
+        pdf.set_text_color(*primary_blue)
+        pdf.set_font("Arial", size=12, style='B')
+        pdf.cell(0, 8, "CONTACT DAISY", ln=True, fill=True, align='C')
+
+        pdf.set_text_color(0, 0, 0)
+        pdf.set_font("Arial", size=11)
+        pdf.ln(2)
+        pdf.cell(0, 6, "Contact Daisy for a free consultation and additional recommendations", ln=True, align='C')
+        pdf.cell(0, 6, "Email: businessvaluations@daisyco.com", ln=True, align='C')
+
         # Footer with disclaimer
         pdf.ln(8)
         pdf.set_fill_color(*primary_blue)
@@ -537,26 +570,26 @@ def get_recommendations(margin, growth, recurring):
 
     # First recommendation based on margin and growth
     if x < 10:
-        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on driving margins more than growth. A 15% or higher margin will do more for building value for your business than increasing your growth rate."
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on driving margins more than growth. In our experience, for a higher valuation, at margins of 10% or higher, it is best to focus on increasing growth. At margins below 10%, margin improvement becomes more important than growth."
     elif x >= 10 and y < 15:
-        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on improving your growth rate to 15% or above as long as you can continue to keep your margins above 10%."
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on improving your growth rate to 15% or above as long as you can continue to keep your margins above 10%. In our experience, for a higher valuation, at margins of 10% or higher, it is best to focus on increasing growth. At margins below 10%, margin improvement becomes more important than growth."
     elif x >= 10 and x <= 20 and y >= 15:
-        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on improving your margin above 20%."
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on improving your margin above 20%. In our experience, for a higher valuation, at margins of 10% or higher, it is best to focus on increasing growth. At margins below 10%, margin improvement becomes more important than growth."
     elif x > 20:
-        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on increasing your growth rate while keeping your margins steady."
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on increasing your growth rate while keeping your margins steady. In our experience, for a higher valuation, at margins of 10% or higher, it is best to focus on increasing growth. At margins below 10%, margin improvement becomes more important than growth."
     else:
-        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on improving your margin above 20%."
+        rec1 = f"Given your margin is {x}% and your growth rate is {y}%, you should focus on maintaining your excellent business performance with a priority on improving your margin above 20%. In our experience, for a higher valuation, at margins of 10% or higher, it is best to focus on increasing growth. At margins below 10%, margin improvement becomes more important than growth."
 
     recommendations.append(rec1)
 
     # Second recommendation based on recurring revenue
     if z < 40:
-        rec2 = f"We recommend that you increase your recurring revenue from {z}% to 40% of your revenue to obtain the type of valuations in security and pest businesses (up to 4x revenue). Daisy has a proven system for increasing your recurring revenue in a dramatic way through DaisyCare."
+        rec2 = f"We recommend that you increase your recurring revenue from {z}% to 40% of your revenue to obtain the type of valuations in security and pest businesses (up to 4x revenue). Investors value recurring revenue significantly more than project revenue. Daisy has a proven system for increasing your recurring revenue in a dramatic way through DaisyCare."
     elif z >= 40 and z < 100:
         target = min(z + 20, 100)
-        rec2 = f"We recommend that you increase your recurring revenue from {z}% to {target}% to obtain the type of valuations in security and pest businesses (up to 4x revenue). Daisy has a proven system for increasing your recurring revenue in a dramatic way through DaisyCare."
+        rec2 = f"We recommend that you increase your recurring revenue from {z}% to {target}% to obtain the type of valuations in security and pest businesses (up to 4x revenue). Investors value recurring revenue significantly more than project revenue. Daisy has a proven system for increasing your recurring revenue in a dramatic way through DaisyCare."
     else:  # z == 100
-        rec2 = "You are doing great on recurring revenue!! Keep it up!"
+        rec2 = "You are doing great on recurring revenue!! Investors value recurring revenue significantly more than project revenue. Keep it up!"
 
     recommendations.append(rec2)
 
@@ -565,6 +598,155 @@ def get_recommendations(margin, growth, recurring):
     recommendations.append(rec3)
 
     return recommendations
+
+
+# Microsoft Graph API Email Configuration
+# IMPORTANT: Configure these settings before deploying
+TENANT_ID = os.environ.get('TENANT_ID')  # Your Azure tenant ID
+CLIENT_ID = os.environ.get('CLIENT_ID')  # Your app registration client ID
+CLIENT_SECRET = os.environ.get('CLIENT_SECRET')  # Your app registration client secret
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL')  # Email address that will send emails
+
+# Microsoft Graph API Configuration Instructions:
+# 1. Register an app in Azure Portal (App registrations)
+# 2. Grant Mail.Send permission (Application type)
+# 3. Admin consent for the tenant
+# 4. Create a client secret
+# 5. Use environment variables in production
+# 6. The sender email must belong to your Azure tenant
+
+
+def validate_email(email):
+    """Validate email address format"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+
+def get_graph_access_token():
+    """Get access token for Microsoft Graph API"""
+    try:
+        # Create a confidential client application
+        app = msal.ConfidentialClientApplication(
+            CLIENT_ID,
+            authority=f"https://login.microsoftonline.com/{TENANT_ID}",
+            client_credential=CLIENT_SECRET,
+        )
+
+        # Get token for Microsoft Graph
+        scopes = ["https://graph.microsoft.com/.default"]
+        result = app.acquire_token_for_client(scopes=scopes)
+
+        if "access_token" in result:
+            return result["access_token"]
+        else:
+            raise Exception(f"Failed to acquire token: {result.get('error_description', 'Unknown error')}")
+
+    except Exception as e:
+        raise Exception(f"Authentication failed: {str(e)}")
+
+
+def send_valuation_email(recipient_email, dealer_name, company_name, pdf_data):
+    """Send valuation report as email attachment using Microsoft Graph API"""
+    try:
+        # Validate required environment variables
+        missing_vars = []
+        if not TENANT_ID:
+            missing_vars.append('TENANT_ID')
+        if not CLIENT_ID:
+            missing_vars.append('CLIENT_ID')
+        if not CLIENT_SECRET:
+            missing_vars.append('CLIENT_SECRET')
+        if not SENDER_EMAIL:
+            missing_vars.append('SENDER_EMAIL')
+
+        if missing_vars:
+            return False, f"Missing required environment variables: {', '.join(missing_vars)}"
+
+        # Get access token
+        access_token = get_graph_access_token()
+
+        # Email body
+        body_text = f"""
+Dear {dealer_name or 'Valued Client'},
+
+Thank you for using Daisy's Business Valuation Calculator!
+
+Attached to this email is your personalized business valuation report for {company_name or 'your company'}.
+
+This report includes:
+- Your calculated business valuation
+- Personalized recommendations based on your metrics
+- Next steps to maximize your company's value
+
+If you'd like to discuss your valuation further or need help implementing these recommendations, please don't hesitate to contact us for a free consultation.
+
+Best regards,
+The Daisy Team
+Daisy Business Valuations
+Email: businessvaluations@daisyco.com
+
+---
+This email was sent automatically from Daisy's Business Valuation Calculator.
+For any questions, please reply to this email or contact us at businessvaluations@daisyco.com
+        """
+
+        # Encode PDF as base64
+        pdf_base64 = base64.b64encode(pdf_data).decode('utf-8')
+        filename = f"{company_name or 'Business'} Valuation Report.pdf"
+
+        # Create email message for Graph API
+        email_message = {
+            "message": {
+                "subject": f"Your Business Valuation Report - {company_name or 'Your Company'}",
+                "body": {
+                    "contentType": "Text",
+                    "content": body_text
+                },
+                "toRecipients": [
+                    {
+                        "emailAddress": {
+                            "address": recipient_email
+                        }
+                    }
+                ],
+                "attachments": [
+                    {
+                        "@odata.type": "#microsoft.graph.fileAttachment",
+                        "name": filename,
+                        "contentType": "application/pdf",
+                        "contentBytes": pdf_base64
+                    }
+                ]
+            },
+            "saveToSentItems": "true"
+        }
+
+        # Send email using Microsoft Graph API
+        graph_url = f"https://graph.microsoft.com/v1.0/users/{SENDER_EMAIL}/sendMail"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post(
+            graph_url,
+            headers=headers,
+            data=json.dumps(email_message)
+        )
+
+        if response.status_code == 202:
+            return True, "Email sent successfully!"
+        else:
+            error_details = response.text
+            try:
+                error_json = response.json()
+                error_message = error_json.get('error', {}).get('message', error_details)
+            except:
+                error_message = error_details
+            return False, f"Failed to send email: {error_message}"
+
+    except Exception as e:
+        return False, f"Failed to send email: {str(e)}"
 
 
 # If calculation has been run, show results
@@ -601,48 +783,66 @@ if st.session_state.calc_done:
     # PDF and Meeting Section
     st.markdown('<h3 class="premium-text" style="text-align: center;">📋 Next Steps</h3>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    # Single button to generate and download PDF
+    try:
+        pdf_data = generate_pdf(
+            st.session_state.dealer_name,
+            st.session_state.company_name,
+            st.session_state.location,
+            st.session_state.email,
+            st.session_state.revenue,
+            val_base,
+            st.session_state.pm,
+            st.session_state.rr,
+            st.session_state.gr,
+            recommendations
+        )
 
-    with col1:
-        # Single button to generate and download PDF
-        try:
-            pdf_data = generate_pdf(
-                st.session_state.dealer_name,
-                st.session_state.company_name,
-                st.session_state.location,
-                st.session_state.email,
-                st.session_state.revenue,
-                val_base,
-                st.session_state.pm,
-                st.session_state.rr,
-                st.session_state.rmr,
-                st.session_state.gr,
-                recommendations
-            )
+        # Email button with validation
+        if st.button("📧 Email me my valuation report", type="primary", use_container_width=True):
+            # Use current email input, not session state (in case user changed it after calculation)
+            current_email = email if email else st.session_state.get('email', '')
+            if not current_email or not current_email.strip():
+                st.error("⚠️ Please provide an email address in the contact information section above.")
+            elif not validate_email(current_email):
+                st.error("⚠️ Please enter a valid email address.")
+            else:
+                with st.spinner("📤 Sending your valuation report..."):
+                    success, message = send_valuation_email(
+                        current_email,
+                        st.session_state.dealer_name,
+                        st.session_state.company_name,
+                        pdf_data
+                    )
 
-            st.download_button(
-                label="📄 Download PDF Report",
-                data=pdf_data,
-                file_name=f"{st.session_state.company_name or 'Business'} Valuation Report.pdf",
-                mime="application/pdf",
-                type="primary",
-                use_container_width=True,
-            )
-        except Exception as e:
-            st.error(f"⚠️ Unable to generate PDF: {str(e)}")
-            st.button("📄 PDF Unavailable", disabled=True, type="secondary", use_container_width=True)
+                if success:
+                    st.success(f"✅ {message}")
+                    st.balloons()
+                else:
+                    st.error(f"❌ {message}")
+                    # Fallback option to download if email fails
+                    st.download_button(
+                        label="📄 Download PDF instead",
+                        data=pdf_data,
+                        file_name=f"{st.session_state.company_name or 'Business'} Valuation Report.pdf",
+                        mime="application/pdf",
+                        type="secondary",
+                        use_container_width=True,
+                    )
+    except Exception as e:
+        st.error(f"⚠️ Unable to generate PDF: {str(e)}")
+        st.button("📄 PDF Unavailable", disabled=True, type="secondary", use_container_width=True)
 
-    with col2:
-        if st.button("📅 Schedule Consultation", type="primary"):
-            st.markdown("""
-            <div style="background: rgba(255, 200, 157, 0.1); padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ffc89d; box-shadow: 0 4px 16px rgba(255, 200, 157, 0.15);">
-                <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">💼 Ready to Maximize Your Value?</h4>
-                <p style="color: #ffffff; margin: 10px 0; font-size: 14px;">Schedule a consultation with our experts.</p>
-                <a href="https://calendly.com/daisy-valuation" target="_blank" style="color: #ffc89d; font-weight: 600; text-decoration: none; font-size: 16px;">
-                    🗓️ Book Your Consultation
-                </a>
-            </div>
-            """, unsafe_allow_html=True)
+    if st.button("📅 Contact me for my free consultation", type="primary"):
+        st.markdown("""
+        <div style="background: rgba(255, 200, 157, 0.1); padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ffc89d; box-shadow: 0 4px 16px rgba(255, 200, 157, 0.15);">
+            <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">💼 Ready to Maximize Your Value?</h4>
+            <p style="color: #ffffff; margin: 10px 0; font-size: 14px;">Schedule a consultation with our experts.</p>
+            <a href="https://calendly.com/daisy-valuation" target="_blank" style="color: #ffc89d; font-weight: 600; text-decoration: none; font-size: 16px;">
+                🗓️ Book Your Consultation
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
