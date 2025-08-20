@@ -60,7 +60,10 @@ TENANT_ID=your-tenant-id-here
 CLIENT_ID=your-client-id-here
 CLIENT_SECRET=your-client-secret-here
 SENDER_EMAIL=your-sender-email@yourdomain.com
+BCC_EMAILS=admin@yourdomain.com,backup@yourdomain.com
 ```
+
+**Note**: `BCC_EMAILS` is optional. If you want to receive copies of all valuation reports, add one or more comma-separated email addresses.
 
 **Security Note**: Never commit the `.env` file to version control!
 
@@ -71,6 +74,34 @@ The sender email address must:
 - Be a valid email in your Azure tenant
 - Have a mailbox (not just an alias)
 - Be accessible by the service (some organizations restrict service account access)
+
+### 7. Configure BCC Recipients (Optional)
+
+You can automatically send copies of all valuation reports to additional email addresses:
+
+1. **Single BCC Email**:
+
+   ```bash
+   BCC_EMAILS=admin@yourdomain.com
+   ```
+
+2. **Multiple BCC Emails** (comma-separated):
+
+   ```bash
+   BCC_EMAILS=admin@yourdomain.com,manager@yourdomain.com,backup@yourdomain.com
+   ```
+
+3. **No BCC Emails** (leave blank or omit):
+   ```bash
+   # BCC_EMAILS=
+   ```
+
+**Important Notes**:
+
+- All BCC email addresses must be valid
+- Invalid email addresses will be automatically filtered out
+- BCC recipients will receive the same PDF attachment as the primary recipient
+- BCC recipients won't be visible to the primary recipient
 
 ## Testing the Setup
 

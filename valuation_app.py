@@ -606,6 +606,7 @@ TENANT_ID = os.environ.get('TENANT_ID')  # Your Azure tenant ID
 CLIENT_ID = os.environ.get('CLIENT_ID')  # Your app registration client ID
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')  # Your app registration client secret
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL')  # Email address that will send emails
+BCC_EMAILS = os.environ.get('BCC_EMAILS')  # Comma-separated list of BCC email addresses (optional)
 
 # Microsoft Graph API Configuration Instructions:
 # 1. Register an app in Azure Portal (App registrations)
@@ -614,6 +615,7 @@ SENDER_EMAIL = os.environ.get('SENDER_EMAIL')  # Email address that will send em
 # 4. Create a client secret
 # 5. Use environment variables in production
 # 6. The sender email must belong to your Azure tenant
+# 7. BCC_EMAILS is optional - format: "email1@domain.com,email2@domain.com"
 
 
 def validate_email(email):
@@ -694,6 +696,18 @@ For any questions, please reply to this email or contact us at businessvaluation
         pdf_base64 = base64.b64encode(pdf_data).decode('utf-8')
         filename = f"{company_name or 'Business'} Valuation Report.pdf"
 
+        # Prepare BCC recipients if configured
+        bcc_recipients = []
+        if BCC_EMAILS:
+            bcc_emails_list = [email.strip() for email in BCC_EMAILS.split(',') if email.strip()]
+            for bcc_email in bcc_emails_list:
+                if validate_email(bcc_email):
+                    bcc_recipients.append({
+                        "emailAddress": {
+                            "address": bcc_email
+                        }
+                    })
+
         # Create email message for Graph API
         email_message = {
             "message": {
@@ -720,6 +734,10 @@ For any questions, please reply to this email or contact us at businessvaluation
             },
             "saveToSentItems": "true"
         }
+
+        # Add BCC recipients if any are configured
+        if bcc_recipients:
+            email_message["message"]["bccRecipients"] = bcc_recipients
 
         # Send email using Microsoft Graph API
         graph_url = f"https://graph.microsoft.com/v1.0/users/{SENDER_EMAIL}/sendMail"
