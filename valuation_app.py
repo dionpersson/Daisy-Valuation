@@ -67,14 +67,27 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
 
 /* Enhanced text contrast for better readability */
 .stMarkdown p, .stMarkdown div, .stMarkdown span {
-    color: #ffffff ;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) ;
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 .stMarkdown strong {
-    color: var(--primary-orange) ;
-    font-weight: 600 ;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) ;
+    color: var(--primary-orange) !important;
+    font-weight: 600 !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Force all headers to be white regardless of system theme */
+h1, h2, h3, h4, h5, h6,
+.stTitle, .stHeader, .stSubheader,
+div[data-testid="stMarkdownContainer"] h1,
+div[data-testid="stMarkdownContainer"] h2,
+div[data-testid="stMarkdownContainer"] h3,
+div[data-testid="stMarkdownContainer"] h4,
+div[data-testid="stMarkdownContainer"] h5,
+div[data-testid="stMarkdownContainer"] h6 {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Input labels with better contrast for all devices */
@@ -121,10 +134,21 @@ div[data-testid="stMarkdown"] p,
 }
 
 .stHeader {
-    color: var(--primary-orange) ;
+    color: #ffffff !important;
     font-family: 'Poppins', sans-serif !important;
-    font-weight: 600 ;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) ;
+    font-weight: 600 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Force header elements to be white with strong specificity */
+div[data-testid="column"] h1,
+div[data-testid="column"] h2,
+div[data-testid="column"] h3,
+div[data-testid="column"] h4,
+div[data-testid="column"] h5,
+div[data-testid="column"] h6 {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
 }
 
 .premium-text {
@@ -290,13 +314,13 @@ div[data-testid="stMarkdown"] p,
 .stNumberInput > div > div > input,
 .stTextInput input,
 .stNumberInput input {
-    background: rgba(255, 252, 242, 0.15) !important;
+    background: rgba(0, 23, 43, 0.8) !important;
     border: 2px solid var(--accent) !important;
     color: #ffffff !important;
     border-radius: 8px !important;
     padding: 10px 12px !important;
     font-weight: 500 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
     transition: all 0.3s ease !important;
 }
 
@@ -305,7 +329,7 @@ div[data-testid="stMarkdown"] p,
 .stNumberInput > div > div > input:focus,
 .stTextInput input:focus,
 .stNumberInput input:focus {
-    background: rgba(255, 252, 242, 0.25) !important;
+    background: rgba(0, 23, 43, 0.9) !important;
     border-color: var(--primary-orange) !important;
     color: #ffffff !important;
     box-shadow: 0 4px 12px rgba(255, 200, 157, 0.3) !important;
@@ -317,7 +341,7 @@ div[data-testid="stMarkdown"] p,
 .stNumberInput > div > div > input:hover,
 .stTextInput input:hover,
 .stNumberInput input:hover {
-    background: rgba(255, 252, 242, 0.2) !important;
+    background: rgba(0, 23, 43, 0.85) !important;
     border-color: rgba(255, 200, 157, 0.8) !important;
 }
 
@@ -336,7 +360,7 @@ div[data-testid="stMarkdown"] p,
 .stTextInput input:-webkit-autofill:focus,
 .stNumberInput input:-webkit-autofill:focus {
     -webkit-text-fill-color: #ffffff !important;
-    -webkit-box-shadow: 0 0 0px 1000px rgba(255, 252, 242, 0.15) inset !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(0, 23, 43, 0.8) inset !important;
     transition: background-color 5000s ease-in-out 0s !important;
 }
 
@@ -346,17 +370,17 @@ div[data-testid="stMarkdown"] p,
     .stNumberInput > div > div > input,
     .stTextInput input,
     .stNumberInput input {
-        background: rgba(255, 252, 242, 0.2) !important;
+        background: rgba(0, 23, 43, 0.85) !important;
         color: #ffffff !important;
         border: 2px solid rgba(255, 200, 157, 0.6) !important;
         font-size: 16px !important; /* Prevents zoom on iOS */
         padding: 12px 15px !important;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4) !important;
     }
     
     .stTextInput input:focus,
     .stNumberInput input:focus {
-        background: rgba(255, 252, 242, 0.3) !important;
+        background: rgba(0, 23, 43, 0.95) !important;
         color: #ffffff !important;
         border-color: var(--primary-orange) !important;
     }
