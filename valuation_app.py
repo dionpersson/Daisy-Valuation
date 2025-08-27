@@ -77,11 +77,38 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) ;
 }
 
-/* Input labels with better contrast */
-.stTextInput label, .stNumberInput label, .stSlider label {
-    color: #ffffff ;
-    font-weight: 500 ;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) ;
+/* Input labels with better contrast for all devices */
+.stTextInput label, 
+.stNumberInput label, 
+.stSlider label,
+.stTextInput > label,
+.stNumberInput > label,
+.stSlider > label {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+}
+
+/* Ensure all form-related text is visible */
+div[data-testid="stText"],
+div[data-testid="stMarkdown"] p,
+.stMarkdown p {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Mobile label adjustments */
+@media (max-width: 768px) {
+    .stTextInput label, 
+    .stNumberInput label, 
+    .stSlider label {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+    }
 }
 
 .stTitle {
@@ -258,26 +285,81 @@ html, body, [class*="css"], .stMarkdown, .stText, .stTitle, .stHeader, .stSubhea
     box-shadow: 0 6px 20px rgba(255, 200, 157, 0.4);
 }
 
-/* Input styling */
+/* Comprehensive Input styling for all devices and modes */
 .stTextInput > div > div > input,
-.stNumberInput > div > div > input {
-    background: rgba(255, 252, 242, 0.1);
-    border: 1px solid var(--accent);
-    color: var(--primary-foreground) !important;
-    border-radius: 6px;
-}
-
-/* Force input text to be white and visible */
+.stNumberInput > div > div > input,
 .stTextInput input,
 .stNumberInput input {
+    background: rgba(255, 252, 242, 0.15) !important;
+    border: 2px solid var(--accent) !important;
     color: #ffffff !important;
-    background: rgba(255, 252, 242, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 10px 12px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Enhanced focus state */
+.stTextInput > div > div > input:focus,
+.stNumberInput > div > div > input:focus,
+.stTextInput input:focus,
+.stNumberInput input:focus {
+    background: rgba(255, 252, 242, 0.25) !important;
+    border-color: var(--primary-orange) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(255, 200, 157, 0.3) !important;
+    outline: none !important;
+}
+
+/* Hover state */
+.stTextInput > div > div > input:hover,
+.stNumberInput > div > div > input:hover,
+.stTextInput input:hover,
+.stNumberInput input:hover {
+    background: rgba(255, 252, 242, 0.2) !important;
+    border-color: rgba(255, 200, 157, 0.8) !important;
 }
 
 /* Placeholder text styling */
 .stTextInput input::placeholder,
 .stNumberInput input::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-weight: 400 !important;
+}
+
+/* Force text color on all input states including autofill */
+.stTextInput input:-webkit-autofill,
+.stNumberInput input:-webkit-autofill,
+.stTextInput input:-webkit-autofill:hover,
+.stNumberInput input:-webkit-autofill:hover,
+.stTextInput input:-webkit-autofill:focus,
+.stNumberInput input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(255, 252, 242, 0.15) inset !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* Mobile-specific input styling */
+@media (max-width: 768px) {
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input,
+    .stTextInput input,
+    .stNumberInput input {
+        background: rgba(255, 252, 242, 0.2) !important;
+        color: #ffffff !important;
+        border: 2px solid rgba(255, 200, 157, 0.6) !important;
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 12px 15px !important;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .stTextInput input:focus,
+    .stNumberInput input:focus {
+        background: rgba(255, 252, 242, 0.3) !important;
+        color: #ffffff !important;
+        border-color: var(--primary-orange) !important;
+    }
 }
 
 .stSlider > div > div > div > div {
@@ -322,12 +404,12 @@ st.markdown(
 )
 
 # Inputs
-revenue = st.number_input("1. Total Annual Revenue ($)", min_value=0, value=1000000, step=1, format="%d")
+revenue = st.number_input("1. Total Annual Revenue ($)", min_value=0,
+                          value=1000000, step=1, format="%d")
 num_employees = st.number_input("2. Number of Employees", min_value=0, step=1)
 profit_margin = st.slider("3. Net Margin (after addbacks) (%)", 0, 100, 15)
 recurring_pct = st.slider("4. RMR/Recurring Revenue (% of revenue)", 0, 100, 10)
-growth_pct_input = st.slider("5. Average Growth Rate (%)", 0, 100, 10)
-growth_pct = min(growth_pct_input, 25)  # Cap at 25%
+growth_pct = st.slider("5. Average Growth Rate (%)", 0, 100, 10)
 st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -416,10 +498,6 @@ with col2:
         st.session_state.pm = profit_margin
         st.session_state.gr = growth_pct
         st.session_state.rr = recurring_pct
-        st.session_state.dealer_name = dealer_name
-        st.session_state.company_name = company_name
-        st.session_state.location = location
-        st.session_state.email = email
         st.session_state.revenue = revenue
         st.session_state.calc_done = True
         st.balloons()
@@ -806,10 +884,10 @@ if st.session_state.calc_done:
     with col2:
         try:
             pdf_data = generate_pdf(
-                st.session_state.dealer_name,
-                st.session_state.company_name,
-                st.session_state.location,
-                st.session_state.email,
+                dealer_name,
+                company_name,
+                location,
+                email,
                 st.session_state.revenue,
                 val_base,
                 st.session_state.pm,
@@ -821,17 +899,16 @@ if st.session_state.calc_done:
             # Email button with validation
             if st.button("📧 Email me my valuation report", type="primary", use_container_width=True):
                 # Use current email input, not session state (in case user changed it after calculation)
-                current_email = email if email else st.session_state.get('email', '')
-                if not current_email or not current_email.strip():
+                if not email or not email.strip():
                     st.error("⚠️ Please provide an email address in the contact information section above.")
-                elif not validate_email(current_email):
+                elif not validate_email(email):
                     st.error("⚠️ Please enter a valid email address.")
                 else:
                     with st.spinner("📤 Sending your valuation report..."):
                         success, message = send_valuation_email(
-                            current_email,
-                            st.session_state.dealer_name,
-                            st.session_state.company_name,
+                            email,
+                            dealer_name,
+                            company_name,
                             pdf_data
                         )
 
@@ -844,7 +921,7 @@ if st.session_state.calc_done:
                         st.download_button(
                             label="📄 Download PDF instead",
                             data=pdf_data,
-                            file_name=f"{st.session_state.company_name or 'Business'} Valuation Report.pdf",
+                            file_name=f"{company_name or 'Business'} Valuation Report.pdf",
                             mime="application/pdf",
                             type="secondary",
                             use_container_width=True,
@@ -853,16 +930,13 @@ if st.session_state.calc_done:
             st.error(f"⚠️ Unable to generate PDF: {str(e)}")
             st.button("📄 PDF Unavailable", disabled=True, type="secondary", use_container_width=True)
 
-        if st.button("📅 Contact me for my free consultation", type="primary", use_container_width=True):
-            st.markdown("""
-            <div style="background: rgba(255, 200, 157, 0.1); padding: 16px; border-radius: 8px; text-align: center; border: 2px solid #ffc89d; box-shadow: 0 4px 16px rgba(255, 200, 157, 0.15);">
-                <h4 style="color: #ffc89d; margin: 0; font-weight: 600;">💼 Ready to Maximize Your Value?</h4>
-                <p style="color: #ffffff; margin: 10px 0; font-size: 14px;">Schedule a consultation with our experts.</p>
-                <a href="https://outlook.office.com/book/DaisyCoCEDIABusinessValuationConsultations@daisyco.com" target="_blank" style="color: #ffc89d; font-weight: 600; text-decoration: none; font-size: 16px;">
-                    🗓️ Book Your Consultation
-                </a>
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+            <a href="https://outlook.office.com/book/DaisyCoCEDIABusinessValuationConsultations@daisyco.com" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #ffc89d, #ffb366); color: #00172b; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 400; box-shadow: 0 4px 16px rgba(255, 200, 157, 0.3); transition: all 0.3s ease;">
+                📅 Contact me for my free consultation
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
 
     # Disclaimer
     st.markdown('<h3 class="premium-text" style="text-align: center; margin-top: 30px;">⚖️ Important Disclaimer</h3>', unsafe_allow_html=True)
