@@ -428,12 +428,14 @@ st.markdown(
 )
 
 # Inputs
-revenue = st.number_input("1. Total Annual Revenue ($)", min_value=0,
-                          value=1000000, step=1, format="%d")
-num_employees = st.number_input("2. Number of Employees", min_value=0, step=1)
-profit_margin = st.slider("3. Net Margin (after addbacks) (%)", 0, 100, 15)
-recurring_pct = st.slider("4. RMR/Recurring Revenue (% of revenue)", 0, 100, 10)
-growth_pct = st.slider("5. Average Growth Rate (%)", 0, 100, 10)
+revenue = st.slider("1. Total Annual Revenue ($)", min_value=0,
+                    max_value=15000000, value=1000000, step=100000, format="%i")
+num_employees = st.slider("2. Number of Employees", min_value=0, max_value=100, value=5, step=1, format="%d")
+profit_margin = st.slider("3. Net Margin (after addbacks) (%)", min_value=0,
+                          max_value=100, value=15, step=1, format="%d")
+recurring_pct = st.slider("4. RMR/Recurring Revenue (% of revenue)", min_value=0,
+                          max_value=100, value=10, step=1, format="%d")
+growth_pct = st.slider("5. Average Growth Rate (%)", min_value=0, max_value=100, value=10, step=1, format="%d")
 st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -588,7 +590,7 @@ def generate_pdf(dealer_name, company_name, location, email, revenue, val_base, 
         pdf.set_fill_color(*primary_orange)
         pdf.set_text_color(*primary_blue)
         pdf.set_font("Arial", size=14, style='B')
-        pdf.cell(0, 10, "BUSINESS VALUATION", ln=True, fill=True, align='C')
+        pdf.cell(0, 10, "ESTIMATED BUSINESS VALUATION", ln=True, fill=True, align='C')
 
         pdf.set_text_color(0, 0, 0)
         pdf.set_font("Arial", size=16, style='B')
